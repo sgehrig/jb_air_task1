@@ -105,7 +105,16 @@ func UpdateCustomer(c *gin.Context) {
 }
 
 func DeleteCustomer(c *gin.Context) {
-	if err := db.Delete(&Customer{}, c.Param("id")).Error; err != nil {
+	var customer Customer
+	if err := db.First(&customer, c.Param("id")).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+	if err := db.Delete(&customer).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -170,7 +179,16 @@ func UpdateCategory(c *gin.Context) {
 }
 
 func DeleteCategory(c *gin.Context) {
-	if err := db.Delete(&ShopItemCategory{}, c.Param("id")).Error; err != nil {
+	var category ShopItemCategory
+	if err := db.First(&category, c.Param("id")).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Category not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+	if err := db.Delete(&category).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -235,7 +253,16 @@ func UpdateItem(c *gin.Context) {
 }
 
 func DeleteItem(c *gin.Context) {
-	if err := db.Delete(&ShopItem{}, c.Param("id")).Error; err != nil {
+	var item ShopItem
+	if err := db.First(&item, c.Param("id")).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+	if err := db.Delete(&item).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -300,7 +327,16 @@ func UpdateOrder(c *gin.Context) {
 }
 
 func DeleteOrder(c *gin.Context) {
-	if err := db.Delete(&Order{}, c.Param("id")).Error; err != nil {
+	var order Order
+	if err := db.First(&order, c.Param("id")).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+	if err := db.Delete(&order).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
