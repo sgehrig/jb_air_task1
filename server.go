@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func InitServer() *gin.Engine {
@@ -49,14 +50,21 @@ func StartServer() {
 // --- Customer CRUD Handlers ---
 func GetCustomers(c *gin.Context) {
 	var customers []Customer
-	db.Find(&customers)
+	if err := db.Find(&customers).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, customers)
 }
 
 func GetCustomer(c *gin.Context) {
 	var customer Customer
 	if err := db.First(&customer, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 	c.JSON(http.StatusOK, customer)
@@ -78,14 +86,21 @@ func CreateCustomer(c *gin.Context) {
 func UpdateCustomer(c *gin.Context) {
 	var customer Customer
 	if err := db.First(&customer, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 	if err := c.ShouldBindJSON(&customer); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	db.Save(&customer)
+	if err := db.Save(&customer).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, customer)
 }
 
@@ -100,14 +115,21 @@ func DeleteCustomer(c *gin.Context) {
 // --- ShopItemCategory CRUD Handlers ---
 func GetCategories(c *gin.Context) {
 	var categories []ShopItemCategory
-	db.Find(&categories)
+	if err := db.Find(&categories).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, categories)
 }
 
 func GetCategory(c *gin.Context) {
 	var category ShopItemCategory
 	if err := db.First(&category, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Category not found"})
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Category not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 	c.JSON(http.StatusOK, category)
@@ -129,14 +151,21 @@ func CreateCategory(c *gin.Context) {
 func UpdateCategory(c *gin.Context) {
 	var category ShopItemCategory
 	if err := db.First(&category, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Category not found"})
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Category not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 	if err := c.ShouldBindJSON(&category); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	db.Save(&category)
+	if err := db.Save(&category).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, category)
 }
 
@@ -151,14 +180,21 @@ func DeleteCategory(c *gin.Context) {
 // --- ShopItem CRUD Handlers ---
 func GetItems(c *gin.Context) {
 	var items []ShopItem
-	db.Preload("Categories").Find(&items)
+	if err := db.Preload("Categories").Find(&items).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, items)
 }
 
 func GetItem(c *gin.Context) {
 	var item ShopItem
 	if err := db.Preload("Categories").First(&item, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 	c.JSON(http.StatusOK, item)
@@ -180,14 +216,21 @@ func CreateItem(c *gin.Context) {
 func UpdateItem(c *gin.Context) {
 	var item ShopItem
 	if err := db.First(&item, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 	if err := c.ShouldBindJSON(&item); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	db.Save(&item)
+	if err := db.Save(&item).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, item)
 }
 
@@ -202,14 +245,21 @@ func DeleteItem(c *gin.Context) {
 // --- Order CRUD Handlers ---
 func GetOrders(c *gin.Context) {
 	var orders []Order
-	db.Preload("Customer").Preload("Items").Find(&orders)
+	if err := db.Preload("Customer").Preload("Items").Find(&orders).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, orders)
 }
 
 func GetOrder(c *gin.Context) {
 	var order Order
 	if err := db.Preload("Customer").Preload("Items").First(&order, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 	c.JSON(http.StatusOK, order)
@@ -231,14 +281,21 @@ func CreateOrder(c *gin.Context) {
 func UpdateOrder(c *gin.Context) {
 	var order Order
 	if err := db.First(&order, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 	if err := c.ShouldBindJSON(&order); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	db.Save(&order)
+	if err := db.Save(&order).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, order)
 }
 
