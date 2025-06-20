@@ -17,7 +17,7 @@ import (
 func setupTestRouter() (*gin.Engine, *gorm.DB) {
     gin.SetMode(gin.TestMode)
     db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-    db.AutoMigrate(&models.Customer{}, &models.ShopItemCategory{}, &models.ShopItem{}, &models.OrderItem{}, &models.Order{})
+    models.AutoMigrate(db)
     models.InitDefaults(db)
     r := gin.Default()
     RegisterRoutes(r, db)
