@@ -7,8 +7,11 @@ import (
 	"gorm.io/gorm"
 )
 
+var db *gorm.DB
+
 func main() {
-	db, err := gorm.Open(sqlite.Open("db.sqlite"), &gorm.Config{})
+	var err error
+	db, err = gorm.Open(sqlite.Open("db.sqlite"), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("failed to connect database: %v", err)
 	}
@@ -21,5 +24,5 @@ func main() {
 		log.Fatalf("failed to initialize default data: %v", err)
 	}
 
-	log.Println("Database initialized and ready.")
+	StartServer()
 }
